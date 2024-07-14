@@ -1,0 +1,30 @@
+import { StreetModel } from "./StreetModel";
+import { LandscapingConditionModel } from "./LandscapingConditionModel";
+
+export type LandscapingOnRoadwayModel = {
+  id: number;
+  order: number;
+  start_location_right_km: number;
+  start_location_right_m: number;
+  end_location_right_km: number;
+  end_location_right_m: number;
+  start_location_left_km: number;
+  start_location_left_m: number;
+  end_location_left_km: number;
+  end_location_left_m: number;
+  two_row_m: number;
+  three_row_m: number;
+  four_row_m: number;
+  five_row_m: number;
+  six_row_m: number;
+  eight_row_m: number;
+  total_length_m: number;
+  decorative_length_km: number;
+  length_to_edge_m: number;
+  street_id: number;
+  street?: StreetModel | null;
+  landscaping_condition_id: number;
+  landscaping_condition?: LandscapingConditionModel | null;
+  created_at: Date;
+  updated_at: Date;
+};

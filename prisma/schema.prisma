@@ -1,0 +1,824 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  title       String           @unique
+  permissions RolePermission[]
+  users       User[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  
+  @@index([title])
+  @@map("Roles")
+}
+
+model Permission {
+  id    Int              @id @default(autoincrement())
+  title String           @unique
+  roles RolePermission[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  
+  @@index([title])
+  @@map("Permissions")
+}
+
+model RolePermission {
+  id            Int        @id @default(autoincrement())
+  role_id       Int
+  permission_id Int
+  role          Role       @relation(fields: [role_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  permission    Permission @relation(fields: [permission_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@unique([role_id, permission_id])
+  @@index([role_id])
+  @@index([permission_id])
+}
+
+model User {
+  id             Int     @id @default(autoincrement())
+  name           String
+  email          String  @unique
+  phone          String  @unique
+  password_hash  String  @db.Text
+  email_verified Boolean @default(false)
+  is_active      Boolean @default(false)
+  role_id        Int
+  role           Role    @relation(fields: [role_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([name])
+  @@index([email])
+  @@index([phone])
+  @@map("Users")
+}
+
+model Street {
+  id           Int     @id @default(autoincrement())
+  title_ru     String  @db.Text
+  title_kk     String  @db.Text
+  title_en     String? @db.Text
+  geo_position Json
+  geo_color    String?
+  is_active    Boolean @default(true)
+
+  lengthOfTheRoadSurfaces              LengthOfTheRoadSurface[]
+  roadways                             Roadway[]
+  spillwayInfrastructures              SpillwayInfrastructure[]
+  informationOfRoadMarkings            InformationOfRoadMarking[]
+  architecturalFormOnRoadways          ArchitecturalFormOnRoadway[]
+  trafficLightOnRoadways               TrafficLightOnRoadway[]
+  landingTypeOnRoadways                LandingTypeOnRoadway[]
+  publicStopsOnTheHighways             PublicStopsOnTheHighway[]
+  lightingOnRoadways                   LightingOnRoadway[]
+  fencingAndGuideOnRoadways            FencingAndGuideOnRoadway[]
+  sideStoneOnRoadways                  SideStoneOnRoadway[]
+  sidewalkOnRoadways                   SidewalkOnRoadway[]
+  pedestrianCrossingOnRoadways         PedestrianCrossingOnRoadway[]
+  railwayTransferOnRoadways            RailwayTransferOnRoadway[]
+  widthRoadwayOnHighways               WidthRoadwayOnHighway[]
+  longitudinalProfileOfTheRoads        LongitudinalProfileOfTheRoad[]
+  landscapingOnRoadways                LandscapingOnRoadway[]
+  intersectionAndJunctionOnRoadways    IntersectionAndJunctionOnRoadway[]
+  communicationWithinTheBandOnRoadways CommunicationWithinTheBandOnRoadway[]
+  roadSingOnRoadways                   RoadSingOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("Streets")
+}
+
+model CoverageType {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+
+  lengthOfTheRoadSurfaces           LengthOfTheRoadSurface[]
+  roadways                          Roadway[]
+  sidewalkOnRoadways                SidewalkOnRoadway[]
+  intersectionAndJunctionOnRoadways IntersectionAndJunctionOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("CoverageTypes")
+}
+
+model Side {
+  id                          Int                          @id @default(autoincrement())
+  title_ru                    String                       @db.Text
+  title_kk                    String                       @db.Text
+  title_en                    String?                      @db.Text
+  roadways                    Roadway[]
+  spillwayInfrastructures     SpillwayInfrastructure[]
+  architecturalFormOnRoadways ArchitecturalFormOnRoadway[]
+  trafficLightOnRoadways      TrafficLightOnRoadway[]
+  landingTypeOnRoadways       LandingTypeOnRoadway[]
+  publicStopsOnTheHighways    PublicStopsOnTheHighway[]
+  lightingOnRoadways          LightingOnRoadway[]
+  fencingAndGuideOnRoadways   FencingAndGuideOnRoadway[]
+  sideStoneOnRoadways         SideStoneOnRoadway[]
+  sidewalkOnRoadways          SidewalkOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("Sides")
+}
+
+model Position {
+  id                 Int                 @id @default(autoincrement())
+  title_ru           String              @db.Text
+  title_kk           String              @db.Text
+  title_en           String?             @db.Text
+  sidewalkOnRoadways SidewalkOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("Positions")
+}
+
+model LengthOfTheRoadSurface {
+  id               Int          @id @default(autoincrement())
+  order            Int
+  start            Float
+  end              Float
+  total_length     Float
+  street_id        Int
+  street           Street       @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  coverage_type_id Int
+  coverage_type    CoverageType @relation(fields: [coverage_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([coverage_type_id])
+  @@index([street_id])
+  @@map("LengthOfTheRoadSurfaces")
+}
+
+model CategoryOfHighways {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  roadways Roadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("CategoryOfHighways")
+}
+
+model Roadway {
+  id       Int   @id @default(autoincrement())
+  order    Int
+  start_m  Float
+  end_m    Float
+  square_m Float
+  street_id Int
+  street    Street @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id Int
+  side    Side @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  coverage_type_id Int
+  coverage_type    CoverageType @relation(fields: [coverage_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  category_of_highway_id Int
+  category_of_highways   CategoryOfHighways @relation(fields: [category_of_highway_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([coverage_type_id])
+  @@index([category_of_highway_id])
+  @@index([street_id])
+  @@map("Roadways")
+}
+
+model WellsType {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  spillwayInfrastructures SpillwayInfrastructure[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("WellsTypes")
+}
+
+model SpillwayInfrastructure {
+  id                 Int     @id @default(autoincrement())
+  order              Int
+  on_axis_m          Float
+  from_axis_m        Float
+  is_on_the_roadway  Boolean
+  is_on_the_sidewalk Boolean
+  is_on_the_lawn     Boolean
+  note               String? @db.Text
+  street_id Int
+  street    Street @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id Int
+  side    Side @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  well_type_id Int
+  well_type    WellsType @relation(fields: [well_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@index([well_type_id])
+  @@map("SpillwayInfrastructures")
+}
+
+model RoadMarking {
+  id                 Int     @id @default(autoincrement())
+  title_ru           String  @db.Text
+  title_kk           String  @db.Text
+  title_en           String? @db.Text
+  line_of_number     String  @db.Text
+  normative_document String? @db.Text
+  informationOfRoadMarkings InformationOfRoadMarking[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("RoadMarkings")
+}
+
+model RoadMarkingMaterial {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  informationOfRoadMarkings InformationOfRoadMarking[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("RoadMarkingMaterials")
+}
+
+model InformationOfRoadMarking {
+  id            Int   @id @default(autoincrement())
+  road_width_sm Float
+  road_length_m Float
+  road_square_m Float
+
+  street_id Int
+  street    Street @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  road_marking_id Int
+  road_marking    RoadMarking @relation(fields: [road_marking_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  road_marking_material_id Int?
+  road_marking_material    RoadMarkingMaterial? @relation(fields: [road_marking_material_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@index([road_marking_id])
+  @@index([road_marking_material_id])
+  @@map("InformationOfRoadMarkings")
+}
+
+model ArchitecturalForm {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  architecturalFormOnRoadways ArchitecturalFormOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("ArchitecturalForms")
+}
+
+model ArchitecturalFormOnRoadway {
+  id       Int     @id @default(autoincrement())
+  order    Int
+  start_m  Float
+  end_m    Float
+  square_m Float
+  perim_m  Float
+  feature  String? @db.Text
+  street_id             Int
+  street                Street            @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id               Int
+  side                  Side              @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  architectural_form_id Int
+  architectural_form    ArchitecturalForm @relation(fields: [architectural_form_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@index([architectural_form_id])
+  @@map("ArchitecturalFormOnRoadways")
+}
+
+model TypeTrafficLight {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  trafficLightOnRoadways TrafficLightOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("TypeTrafficLights")
+}
+
+model TrafficLightOnRoadway {
+  id                           Int     @id @default(autoincrement())
+  order                        Int
+  on_axis                      Float
+  have_controller              Boolean
+  traffic_light_qty            Int
+  pedestrian_traffic_light_qty Int
+  rotary_section_qty           Int
+  have_column                  Boolean
+  street_id             Int
+  street                Street           @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id               Int
+  side                  Side             @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  traffic_light_type_id Int
+  traffic_light_type    TypeTrafficLight @relation(fields: [traffic_light_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@index([traffic_light_type_id])
+  @@map("TrafficLightOnRoadways")
+}
+
+model LandingType {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  landingTypeOnRoadways LandingTypeOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("LandingTypes")
+}
+
+model LandingTypeOnRoadway {
+  id            Int   @id @default(autoincrement())
+  order         Int
+  start_m       Float
+  end_m         Float
+  width_start_m Float
+  width_end_m   Float
+  square_m      Float
+  street_id       Int
+  street          Street      @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id         Int
+  side            Side        @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  landing_type_id Int
+  landing_type    LandingType @relation(fields: [landing_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@index([landing_type_id])
+  @@map("LandingTypeOnRoadways")
+}
+
+model PublicStopsOnTheHighway {
+  id                        Int     @id @default(autoincrement())
+  order                     Int
+  start_m                   Float
+  end_m                     Float
+  bus_stop                  String? @db.Text
+  pavilion_qty              Int
+  distance_to_the_roadway_m Float
+  have_route                Boolean
+  boarding_square_m         Float
+  extension_square_m        Float
+  street_id Int
+  street    Street @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id   Int
+  side      Side   @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@map("PublicStopsOnTheHighways")
+}
+
+model LightingSupportType {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("LightingSupportTypes")
+}
+
+model LightingOnRoadway {
+  id              Int     @id @default(autoincrement())
+  order           Int
+  on_axis_m       Float
+  lighting_target String? @db.Text
+  street_id Int
+  street    Street @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id   Int
+  side      Side   @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@map("LightingOnRoadways")
+}
+
+model Unit {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  symbol String
+  fencingAndGuideOnRoadways FencingAndGuideOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("Units")
+}
+
+model FencingAndGuideType {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  fencingAndGuideOnRoadways FencingAndGuideOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("FencingAndGuideTypes")
+}
+
+model FencingAndGuideOnRoadway {
+  id      Int   @id @default(autoincrement())
+  order   Int
+  start_m Float
+  end_m   Float
+  qty     Float
+  street_id             Int
+  street                Street              @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id               Int
+  side                  Side                @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  fencing_guide_type_id Int
+  fencing_guide_type    FencingAndGuideType @relation(fields: [fencing_guide_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  unit_id               Int
+  unit                  Unit                @relation(fields: [unit_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@index([fencing_guide_type_id])
+  @@index([unit_id])
+  @@map("FencingAndGuideOnRoadways")
+}
+
+model SideStoneType {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  sideStoneOnRoadways SideStoneOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("SideStoneTypes")
+}
+
+model SideStoneStamp {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  sideStoneOnRoadways SideStoneOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("SideStoneStamps")
+}
+
+model SideStoneOnRoadway {
+  id       Int   @id @default(autoincrement())
+  order    Int
+  start_m  Float
+  end_m    Float
+  length_m Float
+  street_id           Int
+  street              Street         @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id             Int
+  side                Side           @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_stone_stamp_id Int
+  side_stone_stamp    SideStoneStamp @relation(fields: [side_stone_stamp_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_stone_type_id  Int
+  side_stone_type     SideStoneType  @relation(fields: [side_stone_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@index([side_stone_stamp_id])
+  @@index([side_stone_type_id])
+  @@map("SideStoneOnRoadways")
+}
+
+model SidewalkOnRoadway {
+  id            Int   @id @default(autoincrement())
+  order         Int
+  start_m       Float
+  end_m         Float
+  length_m      Float
+  width_start_m Float
+  width_end_m   Float
+  square_m      Float
+  street_id        Int
+  street           Street       @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  side_id          Int
+  side             Side         @relation(fields: [side_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  coverage_type_id Int
+  coverage_type    CoverageType @relation(fields: [coverage_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  position_id      Int
+  position         Position     @relation(fields: [position_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([side_id])
+  @@index([street_id])
+  @@index([coverage_type_id])
+  @@index([position_id])
+  @@map("SidewalkOnRoadways")
+}
+
+model PedestrianCrossingType {
+  id                           Int                           @id @default(autoincrement())
+  title_ru                     String                        @db.Text
+  title_kk                     String                        @db.Text
+  title_en                     String?                       @db.Text
+  pedestrianCrossingOnRoadways PedestrianCrossingOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("PedestrianCrossingTypes")
+}
+
+model PedestrianCrossingPosition {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  pedestrianCrossingOnRoadways PedestrianCrossingOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("PedestrianCrossingPositions")
+}
+
+model PedestrianCrossingOnRoadway {
+  id                      Int     @id @default(autoincrement())
+  order                   Int
+  adress_length_m         Float
+  bus_stop_has_pedestrian Boolean
+  street_id Int
+  street    Street @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  pedestrian_crossing_type_id Int
+  pedestrian_crossing_type    PedestrianCrossingType @relation(fields: [pedestrian_crossing_type_id], references: [id], onDelete: Cascade)
+  pedestrian_crossing_position_id Int
+  pedestrian_crossing_position    PedestrianCrossingPosition @relation(fields: [pedestrian_crossing_position_id], references: [id], onDelete: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@index([pedestrian_crossing_type_id])
+  @@index([pedestrian_crossing_position_id])
+  @@map("PedestrianCrossingOnRoadways")
+}
+
+model BarrierType {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  railwayTransferOnRoadways RailwayTransferOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("BarrierTypes")
+}
+
+model FlooringCondition {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  railwayTransferOnRoadways RailwayTransferOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("FlooringConditions")
+}
+
+model RailwayTransferOnRoadway {
+  id                      Int     @id @default(autoincrement())
+  order                   Int
+  location_m              Float
+  location_km             Float
+  path_qty                Float
+  has_barrier             Boolean
+  has_road_sign           Boolean
+  has_alarm_sign          Boolean
+  has_fence               Boolean
+  has_traffic_light       Boolean
+  has_security            Boolean
+  visible_distance_length Int
+  street_id          Int
+  street             Street            @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  barrier_type_id    Int
+  barrier_type       BarrierType       @relation(fields: [barrier_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  floor_condition_id Int
+  floor_condition    FlooringCondition @relation(fields: [floor_condition_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@index([barrier_type_id])
+  @@index([floor_condition_id])
+  @@map("RailwayTransferOnRoadways")
+}
+
+model WidthRoadwayOnHighway {
+  id                 Int   @id @default(autoincrement())
+  order              Int
+  start_of_region_km Float
+  start_of_region_m  Float
+  end_of_region_km   Float
+  end_of_region_m    Float
+  reverse_width_m    Float
+  both_width_m       Float
+  straight_width_m   Float
+  street_id Int
+  street    Street @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@map("WidthRoadwayOnHighways")
+}
+
+model LongitudinalProfileOfTheRoad {
+  id                 Int   @id @default(autoincrement())
+  order              Int
+  start_of_region_km Float
+  start_of_region_m  Float
+  end_of_region_km   Float
+  end_of_region_m    Float
+  length_m           Float
+  slope              Float
+  street_id Int
+  street    Street @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@map("LongitudinalProfileOfTheRoads")
+}
+
+model LandscapingCondition {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  landscapingOnRoadways LandscapingOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("LandscapingCondition")
+}
+
+model LandscapingOnRoadway {
+  id                      Int   @id @default(autoincrement())
+  order                   Int
+  start_location_right_km Float
+  start_location_right_m  Float
+  end_location_right_km   Float
+  end_location_right_m    Float
+  start_location_left_km  Float
+  start_location_left_m   Float
+  end_location_left_km    Float
+  end_location_left_m     Float
+  two_row_m               Float
+  three_row_m             Float
+  four_row_m              Float
+  five_row_m              Float
+  six_row_m               Float
+  eight_row_m             Float
+  total_length_m          Float
+  decorative_length_km    Float
+  length_to_edge_m        Float
+  street_id                Int
+  street                   Street               @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  landscaping_condition_id Int
+  landscaping_condition    LandscapingCondition @relation(fields: [landscaping_condition_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@index([landscaping_condition_id])
+  @@map("LandscapingOnRoadways")
+}
+
+model IntersectionAndJunctionOnRoadway {
+  id                                 Int     @id @default(autoincrement())
+  order                              Int
+  location_right_km                  Float
+  location_right_m                   Float
+  location_left_km                   Float
+  location_left_m                    Float
+  has_transiotional_high_speed_lanes Boolean
+  has_road_sign                      Boolean
+  has_tube                           Boolean
+  has_signal_pole                    Boolean
+  has_safety_island                  Boolean
+  street_id        Int
+  street           Street       @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  coverage_type_id Int
+  coverage_type    CoverageType @relation(fields: [coverage_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@index([coverage_type_id])
+  @@map("IntersectionAndJunctionOnRoadways")
+}
+
+model CommunicationType {
+  id                                   Int                                   @id @default(autoincrement())
+  title_ru                             String                                @db.Text
+  title_kk                             String                                @db.Text
+  title_en                             String?                               @db.Text
+  communicationWithinTheBandOnRoadways CommunicationWithinTheBandOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("CommunicationTypes")
+}
+
+model CommunicationWithinTheBandOnRoadway {
+  id                       Int   @id @default(autoincrement())
+  order                    Int
+  location_start_km        Float
+  location_start_m         Float
+  location_end_km          Float
+  location_end_m           Float
+  distance_edge_left_m     Float
+  distance_edge_right_m    Float
+  place_of_intersection_km Float
+  place_of_itersection_m   Float
+  street_id             Int
+  street                Street            @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  communication_type_id Int
+  communication_type    CommunicationType @relation(fields: [communication_type_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@index([communication_type_id])
+  @@map("CommunicationWithinTheBandOnRoadways")
+}
+
+model RoadSign {
+  id            Int     @id @default(autoincrement())
+  title_ru      String  @db.Text
+  title_kk      String  @db.Text
+  title_en      String? @db.Text
+  normative_act String  @db.Text
+  sign_number   String  @db.Text
+  is_active     Boolean
+  roadSingOnRoadways RoadSingOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("RoadSigns")
+}
+
+model RoadSignCondition {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  roadSingOnRoadways RoadSingOnRoadway[]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("RoadSignConditions")
+}
+
+model RoadSignMaterial {
+  id       Int     @id @default(autoincrement())
+  title_ru String  @db.Text
+  title_kk String  @db.Text
+  title_en String? @db.Text
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@map("RoadSignMaterials")
+}
+
+model RoadSingOnRoadway {
+  id                             Int     @id @default(autoincrement())
+  order                          Int
+  location_km                    Float
+  location_m                     Float
+  has_left_adjunctions_location  Boolean
+  has_left_direct_location       Boolean
+  has_left_reverse_location      Boolean
+  has_right_adjunctions_location Boolean
+  has_right_direct_location      Boolean
+  has_right_reverse_location     Boolean
+  has_berm                       Boolean
+  street_id              Int
+  street                 Street            @relation(fields: [street_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  road_sign_id           Int
+  road_sign              RoadSign          @relation(fields: [road_sign_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  road_sign_condition_id Int
+  road_sign_condition    RoadSignCondition @relation(fields: [road_sign_condition_id], references: [id],onDelete: Cascade,onUpdate: Cascade)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  @@index([street_id])
+  @@index([road_sign_id])
+  @@index([road_sign_condition_id])
+  @@map("RoadSingOnRoadways")
+}
